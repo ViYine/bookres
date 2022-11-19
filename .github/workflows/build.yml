@@ -3,10 +3,14 @@ name: build
 on:
   push:
     branches:
-      - master
+      - main
+      - develop
+      - release/*
   pull_request:
     branches:
-      - master
+      - main
+      - develop
+      - release/*
 
 jobs:
   build-rust:
@@ -18,12 +22,12 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      # - name: Install stable
-      #   uses: actions-rs/toolchain@v1
-      #   with:
-      #     profile: minimal
-      #     toolchain: stable
-      #     override: true
+      - name: Install stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Install Rust
         run: rustup toolchain install stable --component llvm-tools-preview
       - name: Install cargo-llvm-cov
