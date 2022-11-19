@@ -1,0 +1,8 @@
+[workspace]
+
+# The name of the workspace.
+members = [
+  "abi",
+  "service",
+  "reservation",
+]
