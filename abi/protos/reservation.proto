@@ -1,0 +1,118 @@
+
+syntax = "proto3";
+
+package reservation;
+
+import "google/protobuf/timestamp.proto";
+
+enum ReservationStatus {
+    RESERVATION_STATUS_UNKNOW = 0;
+    RESERVATION_STATUS_PENDING = 1;
+    RESERVATION_STATUS_CONFIRMED = 2;
+    RESERVATION_STATUS_BLOCKED = 3;
+}
+
+enum ReservationUpdateType {
+    RESERVATION_UPDATE_TYPE_UNKNOW = 0;
+    RESERVATION_UPDATE_TYPE_CREATE = 1;
+    RESERVATION_UPDATE_TYPE_UPDATE = 2;
+    RESERVATION_UPDATE_TYPE_DELETE = 3;
+}
+
+// when a reservation is canceled, the reservation should be deleted from the database.
+
+message Reservation {
+    // reservation id
+    string id = 1;
+    // user_id is the user who make the reservation
+    string user_id = 2;
+    // status is the status of reservation, such as pending, confirmed, cancelled, etc. to use show the status of reservation
+    ReservationStatus status = 3;
+
+    // resource reservation window
+    string resource_id = 4;
+    google.protobuf.Timestamp start = 5;
+    google.protobuf.Timestamp end = 6;
+
+    // extra note
+    string note = 7;
+}
+
+message ReserveRequest {
+    Reservation reservation = 1;
+}
+
+message ReserveResponse {
+    Reservation reservation = 1;
+}
+
+message UpdateRequest {
+    // current just update the note of reservation
+    string note = 1;
+}
+
+message UpdateResponse {
+    Reservation reservation = 1;
+}
+
+message ConfirmRequest {
+    // given a reservation id, confirm the reservation
+    string id = 1;
+}
+
+message ConfirmResponse {
+    Reservation reservation = 1;
+}
+
+message CancelRequest {
+    // given a reservation id, cancel the reservation
+    string id = 1;
+}
+
+message CancelResponse {
+    Reservation reservation = 1;
+}
+
+message GetRequest {
+    // given a reservation id, get the reservation
+    string id = 1;
+}
+
+message GetResponse {
+    Reservation reservation = 1;
+}
+
+message QueryRequest {
+    // given a resource id, query the reservation
+    string resource_id = 1;
+    // given a user id, query the reservation
+    string user_id = 2;
+    // use status to filter the reservation, if status is UNKNOWN, then return all reservation
+    ReservationStatus status = 3;
+    google.protobuf.Timestamp start = 4;
+    google.protobuf.Timestamp end = 5;
+}
+
+message WatchRequest {}
+
+message WatchResponse {
+    ReservationUpdateType type = 1;
+    Reservation reservation = 2;
+}
+
+service ReservationService {
+    // create a reservation by a reserve, insert a record into database, id should be null
+    rpc reserve(ReserveRequest) returns (ReserveResponse);
+    // update a reservation, set the note of reservation
+    rpc update(UpdateRequest) returns (UpdateRequest);
+    // confirm a reservation, update the status of reservation
+    rpc confirm(ConfirmRequest) returns (ConfirmResponse);
+    // delete a reservation, delete a record from database
+    rpc cancel(CancelRequest) returns (CancelResponse);
+    // get a reservation, get a record from database
+    rpc get(GetRequest) returns (GetResponse);
+    // query reservations return a list of reservations by stream
+    rpc query(QueryRequest) returns (stream Reservation);
+    // another system could monitor the newly added/comfirmed/canceled reservation
+    rpc watch(WatchRequest) returns (stream WatchResponse);
+}
